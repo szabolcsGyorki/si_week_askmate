@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+{% block header %}
+    {% include 'header.html' %}
+{% endblock %}
+
+{% block content %}
+    {% for tag in tags%}
+        <span class="w3-button w3-light-gray w3-hover-light-gray w3-tiny w3-padding-small">{{ tag.name }}</span>
+        <a href="{{ url_for('delete_tag', question_id=question.id, tag_id=tag.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">&times;</a>
+    {% endfor %}
+    <a href="{{ url_for('tag_question', question_id=question.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Add</a>
+
+    <div class="w3-margin-top">
+        Submission time: {{ question.submission_time }}
+        Views: {{ question.view_number }}
+        Rating: {{ question.vote_number }}
+    </div>
+    <a href="{{ url_for('route_question_vote_up', question_id=question.id) }}" class="w3-button w3-amber w3-small w3-padding-small">Rate up</a>
+    <a href="{{ url_for('route_question_vote_down', question_id=question.id) }}" class="w3-button w3-deep-orange w3-small w3-padding-small">Rate down</a><br>
+    <p><h1 class="w3-green w3-padding-small">{{ question.title }}</h1></p>
+    <p><h3 class="message w3-padding-small">{{ question.message }}</h3></p>
+    <p>
+        {% if question["image"] %}
+            <a href="/static/{{ question["image"] }}" target="_blank">
+            <img src="/static/{{ question["image"] }}">
+            </a>
+        {% endif %}
+    </p>
+    <a href="{{ url_for('route_edit_question', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Edit Question</a>
+    <a href="{{ url_for('route_new_question_comment', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Comment question</a>
+    <a href="{{ url_for('route_new_answer', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Answer the question</a>
+    <a href="{{ url_for('route_delete_question', question_id=question.id) }}" class="w3-button w3-red w3-small w3-padding-small">Delete Question</a>
+
+    <p>
+        <div class="w3-row w3-card w3-padding-small comment-wrapper">
+            {% for comment in question_comments %}
+                <span class="message">{{ comment.message }}</span>
+                <br>on {{ comment.submission_time }} Edited: {{ comment.edited_count }}
+                <a href="{{ url_for('route_edit_comment', question_id=question.id, comment_id=comment.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Edit</a>
+                <a onclick="document.getElementById({{ comment.id }}).style.display='block'" class="w3-button w3-red w3-tiny w3-padding-small">Delete</a>
+                <div id="{{ comment.id }}" class="w3-modal">
+                    <div class="w3-modal-content modal-wrapper">
+
+                        <header class="w3-container w3-green w3-center">
+                            <h2>Are you sure?</h2>
+                        </header>
+
+                        <div class="w3-container w3-center">
+                            <p><span onclick="document.getElementById({{ comment.id }}).style.display='none'"
+                            class="w3-button w3-green w3-padding-small">No, I've changed my mind</span>
+                            <a href="{{ url_for('route_delete_comment',question_id=question.id, comment_id=comment.id) }}" class="w3-button w3-red w3-padding-small">I'am, delete it!</a></p>
+                        </div>
+
+                    </div>
+                </div>
+                <hr>
+            {% endfor %}
+            {% if question_comments == [] %}
+                There are no comments
+            {% endif %}
+        </div>
+    </p>
+
+    {% if answers == [] %}
+        <div class="w3-border-top w3-border-green"><p><h4>There are no answers.</h4></p></div>
+    {% else %}
+        {% for answer in answers %}
+            <div class="w3-border-top w3-border-green">
+                <p>
+                    Submission time: {{ answer.submission_time }}
+                    Rating: {{ answer.vote_number }}<br>
+                    <a href="{{ url_for('route_answer_vote_up', answer_id=answer.id) }}"  class="w3-button w3-amber w3-small w3-padding-small">Rate up</a>
+                    <a href="{{ url_for('route_answer_vote_down', answer_id=answer.id) }}"  class="w3-button w3-deep-orange w3-small w3-padding-small">Rate down</a><br>
+                    <p class="message"><h4>{{ answer.message }}</h4></p>
+                    <p><div class="image-container">
+                        {% if answer["image"] %}
+                            <a href="/static/{{ answer["image"] }}" target="_blank">
+                            <img src="/static/{{ answer["image"] }}">
+                            </a>
+                        {% endif %}
+                    </div></p>
+                    <a href="{{ url_for('route_new_answer_comment', answer_id=answer.id) }}" class="w3-button w3-green w3-small w3-padding-small">Comment answer</a>
+                    <a href="{{ url_for('route_edit_answer', answer_id=answer.id) }}" class="w3-button w3-green w3-small w3-padding-small">Edit answer</a>
+                    <a href="{{ url_for('route_delete_answer', answer_id=answer.id) }}" class="w3-button w3-red w3-small w3-padding-small">Delete answer</a>
+                    <div class="w3-row w3-card w3-padding-small w3-margin-top w3-margin-bottom comment-wrapper">
+                        {% if answer.id not in answers_with_comments %}
+                            There are no comments.
+                        {% else %}
+                            {% for comment in answer_comments %}
+                                {% if comment.answer_id == answer.id %}
+                                    <span class="message">{{ comment.message }}</span>
+                                    <br>on {{ comment.submission_time }} Edited: {{ comment.edited_count }}
+                                        <a href="{{ url_for('route_edit_comment', comment_id=comment.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Edit</a>
+                                        <a onclick="document.getElementById({{ comment.id }}).style.display='block'" class="w3-button w3-red w3-tiny w3-padding-small">Delete</a>
+                                        <div id="{{ comment.id }}" class="w3-modal">
+                                            <div class="w3-modal-content modal-wrapper">
+
+                                                <header class="w3-container w3-green w3-center">
+                                                    <h2>Are you sure?</h2>
+                                                </header>
+
+                                                <div class="w3-container w3-center">
+                                                    <p><span onclick="document.getElementById({{ comment.id }}).style.display='none'"
+                                                    class="w3-button w3-green w3-padding-small">No, I've changed my mind</span>
+                                                    <a href="{{ url_for('route_delete_comment',question_id=question.id, comment_id=comment.id) }}"class="w3-button w3-red w3-padding-small">I'am, delete it!</a></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <hr>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </p>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+{% block footer %}
+    {% include 'footer.html' %}
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+{% block header %}
+    {% include 'header.html' %}
+{% endblock %}
+
+{% block content %}
+    <p><h1 class="w3-green w3-padding-small">Here are your search results:</h1></p>
+    {% if not question_messages and not question_titles and not answers %}
+        Sorry, we couldn't find "{{ search_terms }}" in the questions or answers...:(
+    {% else %}
+    Search phrase: "{{ search_terms }}"
+    {% endif %}
+    {% if question_titles %}
+        <p><h3>Search results in question titles</h3></p>
+        <hr>
+    {% endif %}
+    {% for question in question_titles %}
+        <a href="{{ url_for('display_a_question', question_id=question.id) }}" class="w3-button w3-green w3-padding-small">{{ question.title }}</a>
+        <hr>
+    {% endfor %}
+    {% if question_messages %}
+        <p><h3>Search results in question details</h3></p>
+        <hr>
+    {% endif %}
+    {% for question in question_messages %}
+        <a href="{{ url_for('display_a_question', question_id=question.id) }}" class="w3-button w3-green w3-padding-small">{{ question.title }}</a>
+        <p>Details:<br>{{ question.message }}</p>
+        <hr>
+    {% endfor %}
+    {% if answers %}
+        <p><h3>Search results in answers</h3></p>
+        <hr>
+    {% endif %}
+    {% for answer in answers %}
+        <a href="{{ url_for('display_a_question', question_id=answer.id) }}" class="w3-button w3-green w3-padding-small">{{ answer.title }}</a>
+        <p>Answer:<br>{{ answer.message }}</p>
+        <hr>
+    {% endfor %}
+{% endblock %}
+
+{% block footer %}
+    {% include'footer.html' %}
+{% endblock %}

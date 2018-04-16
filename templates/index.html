@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+{% block header %}
+    {% include 'header.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="w3-responsive"><table class="w3-table w3-striped w3-bordered w3-hoverable">
+        <tr class="w3-padding-small">
+            <th><a href="{{ url_for(page_url, order_by='title', order_direction=order_direction) }}">Title</a></th>
+            <th><a href="{{ url_for(page_url, order_by='submission_time', order_direction=order_direction) }}">Submission time</a></th>
+            <th><a href="{{ url_for(page_url, order_by='view_number', order_direction=order_direction) }}" class="w3-center">View number</a></th>
+            <th><a href="{{ url_for(page_url, order_by='answers', order_direction=order_direction) }}" class="w3-center">Answers</a></th>
+            <th><a href="{{ url_for(page_url, order_by='vote_number', order_direction=order_direction) }}" class="w3-center">Vote number</a></th>
+        </tr>
+        {% for question in questions %}
+            <tr class="w3-hover-green w3-padding-small">
+                <td>
+                    <a href="{{ url_for('increase_view_counter', question_id=question.id) }}">{{ question.title }}</a>
+                    <br>
+                    {% for tag in tags %}
+                        {% if tag.question_id == question.id %}
+                            <span class="w3-button w3-green w3-tiny w3-padding-small">{{ tag.name }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ question.submission_time }}</td>
+                <td class="w3-center">{{ question.view_number }}</td>
+                <td class="w3-center">{{ question.answers }}</td>
+                <td class="w3-center">{{ question.vote_number }}</td>
+            </tr>
+        {% endfor %}
+    </table></div>
+{% endblock %}
+{% block footer %}
+    {% include 'footer.html' %}
+{% endblock %}
