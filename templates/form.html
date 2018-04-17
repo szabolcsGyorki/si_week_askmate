@@ -4,34 +4,46 @@
 {% endblock %}
 
 {% block content %}
-    {% if add_tag %}
-        <p><h2 class="w3-green">Select a tag from the existing ones or define a new one</h2></p>
-        <form action="{{ form_url }}" method="post">
-            <label for="existing">Select from list: </label>
-            <select name="existing" class="w3-select w3-margin-bottom w3-pale-green">
-                {% for tag in tags %}
-                    <option value="{{ tag.id }}">{{ tag.name }}</option>
-                {% endfor %}
-            </select>
-            <label for="new">Define new tag</label>
-            <input type="text" name="new" class="w3-input w3-margin-bottom w3-pale-green">
-            <input type="submit" class="w3-button w3-green">
-        </form>
-    {% endif %}
-
-    {% if not add_tag %}
-        <form action="{{ form_url }}" method="post" enctype="multipart/form-data" class="w3-container">
-            {% if add_question %}
-                <p><label for="title">Question title</label></p>
-                <p><input type="text" name="title" value="{{ title if title }}" class="w3-input w3-pale-green"></p>
+        {% if add_tag %}
+            <p><h2 class="w3-green">Select a tag from the existing ones or define a new one</h2></p>
+            <form action="{{ form_url }}" method="post" class="w3-container form_wrapper">
+                <p><label for="existing">Select from list: </label></p>
+                <p><select name="existing" class="w3-select w3-margin-bottom w3-pale-green">
+                    {% for tag in tags %}class="w3-button w3-green"
+                        <option value="{{ tag.id }}">{{ tag.name }}</option>
+                    {% endfor %}
+                </select></p>
+                <p><label for="new">Define new tag</label></p>
+                <p><input type="text" name="new" class="w3-input w3-margin-bottom w3-pale-green"></p>
+                <p><input type="submit" class="w3-button w3-green"></p>
+            </form>
+        {% else %}
+            {% if not registration %}
+                <form action="{{ form_url }}" method="post" enctype="multipart/form-data" class="w3-container form_wrapper">
+                    {% if add_question %}
+                        <p><label for="title">Question title</label></p>
+                        <p><input type="text" name="title" value="{{ title if title }}" class="w3-input w3-pale-green"></p>
+                    {% endif %}
+                    <P><label for="message">{{ message_title }}</label></P>
+                    <P><textarea name="message" cols="30" rows="10" class="w3-input w3-pale-green">{{ message if message }}</textarea></P>
+                    {% if add_question or add_answer %}
+                        <input type="file" name="image">
+                        <br><span class="w3-small file_constraints">Maximum file size: 4000px * 4000px, 15 MB<br>Accepted file extensions: png, jpg, jpeg, gif</span>
+                    {% endif %}
+                    <p><input type="submit" class="w3-button w3-green"></p>
+                </form>
+            {% else %}
+                <form action="{{ url_for('route_registration') }}" method="post" class="w3-container form_wrapper">
+                    <p><label for="user_name">User Name</label></p>
+                    <p><input type="text" name="user_name" class="w3-input w3-pale-green" required></p>
+                    <p><label for="password">Password</label></p>
+                    <p><input type="text" name="password" class="w3-input w3-pale-green" required></p>
+                    <p><label for="confirm_pw">Confirm Password</label></p>
+                    <p><input type="text" name="confirm_pw" class="w3-input w3-pale-green" required></p>
+                    <p><input type="submit" value="Complete registration" class="w3-button w3-green"></p>
+                </form>
             {% endif %}
-            <P><label for="message">{{ message_title }}</label></P>
-            <P><textarea name="message" cols="30" rows="10" class="w3-input w3-pale-green">{{ message if message }}</textarea></P>
-            <input type="file" name="image">
-            <br><span class="w3-small file_constraints">Maximum file size: 4000px * 4000px, 15 MB<br>Accepted file extensions: png, jpg, jpeg, gif</span>
-            <p><input type="submit" class="w3-button w3-green"></p>
-        </form>
-    {% endif %}
+        {% endif %}
 {% endblock %}
 
 {% block footer %}

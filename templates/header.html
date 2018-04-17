@@ -1,9 +1,22 @@
-<header class="w3-bar w3-green w3-border w3-card-4">
-    <a href="{{ url_for('route_index') }}" class="w3-bar-item w3-button w3-mobile">AskMate</a>
-    <a href="{{ url_for('route_all_questions') }}" class="w3-bar-item w3-button w3-mobile">All Questions</a>
-    <a href="{{ url_for('route_add_question') }}" class="w3-bar-item w3-button w3-mobile">Ask Question</a>
-    <form action="{{ url_for('route_index') }}">
-        <button type="submit" class="w3-bar-item w3-button w3-green w3-right">Go</button>
-        <input type="text" name="search" class="w3-bar-item w3-input w3-right" placeholder="Search..">
-    </form>
+<header>
+    <a href="{{ url_for('route_index') }}"><img src="{{ url_for('static', filename='logo.png') }}" class="w3-hover-opacity"></a>
+    <div class="log_in_form">
+        <form action="{{ url_for('route_login') }}" method="post">
+            <label for="user_name"></label>
+            <input type="text" name="user_name" placeholder="User Name" required class="w3-pale-green log_in_input">
+            <label for="pasword"></label>
+            <input type="text" name="password" placeholder="Password" required class="w3-pale-green log_in_input">
+            <input type="submit" value="Log in" class="w3-button w3-green w3-small">
+        </form>
+        Need an account? <a href="{{ url_for('route_registration') }}" class="w3-text-green w3-hover-text-dark-gray">Register now</a>
+    </div>
+    <div class="w3-bar w3-green w3-border w3-card-4">
+        <a href="{{ url_for('route_index') }}" class="w3-bar-item w3-button w3-mobile">Home</a>
+        <a href="{{ url_for('route_all_questions') }}" class="w3-bar-item w3-button w3-mobile">All Questions</a>
+        <a href="{{ url_for('route_add_question') }}" class="w3-bar-item w3-button w3-mobile">Ask Question</a>
+        <form action="{{ url_for('route_index') }}">
+            <button type="submit" class="w3-bar-item w3-button w3-green w3-right">Go</button>
+            <input type="text" name="search" class="w3-bar-item w3-input w3-right" placeholder="Search..">
+        </form>
+    </div>
 </header>

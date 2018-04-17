@@ -19,7 +19,7 @@
                     <br>
                     {% for tag in tags %}
                         {% if tag.question_id == question.id %}
-                            <span class="w3-button w3-green w3-tiny w3-padding-small">{{ tag.name }}</span>
+                            <span class="w3-button w3-light-gray w3-tiny w3-padding-small">{{ tag.name }}</span>
                         {% endif %}
                     {% endfor %}
                 </td>

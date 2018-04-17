@@ -297,6 +297,22 @@ def delete_tag(question_id, tag_id):
     return redirect(url_for("display_a_question", question_id=question_id))
 
 
+@app.route("/registration", methods=["GET", "POST"])
+def route_registration():
+    if request.method == "POST":
+        return redirect(url_for("route_index"))
+
+
+    return render_template("form.html",
+                           registration=True)
+
+
+@app.route("/login", methods=["POST"])
+def route_login():
+    # session["user_name"] = "user"
+    return redirect(url_for("route_index"))
+
+
 if __name__ == "__main__":
     app.run(
         host='0.0.0.0',
