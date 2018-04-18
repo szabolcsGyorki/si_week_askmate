@@ -128,6 +128,20 @@ def get_tags_with_question_ids(cursor):
     return tags
 
 
+@database_common.connection_handler
+def get_user_name(cursor, name):
+    cursor.execute("SELECT user_name FROM users WHERE user_name=%(name)s", {"name": name})
+    user_names = cursor.fetchall()
+    return user_names
+
+
+@database_common.connection_handler
+def get_user_password(cursor, name):
+    cursor.execute("SELECT password FROM users WHERE user_name=%(name)s", {"name": name})
+    password = cursor.fetchall()
+    return password
+
+
 ####################################################################################
 # Multifunction queries
 ####################################################################################
@@ -200,6 +214,11 @@ def get_updates(columns, values):
         update_list.append(" {} = '{}'".format(col, value))
     update_set = ",".join(update_list)
     return update_set
+
+
+####################################################################################
+# Search queries
+####################################################################################
 
 
 @database_common.connection_handler

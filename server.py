@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, flash
 import data_manager
 from werkzeug.utils import secure_filename
 import os
@@ -8,6 +8,7 @@ UPLOAD_FOLDER = "./static/images/"
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 4000 * 4000
+app.secret_key = os.environ.get("SECRET_KEY")
 
 
 @app.route("/", methods=["POST", "GET"])
@@ -300,6 +301,16 @@ def delete_tag(question_id, tag_id):
 @app.route("/registration", methods=["GET", "POST"])
 def route_registration():
     if request.method == "POST":
+        try:
+            data_manager.add_new_user(request.form)
+        except ValueError:
+            flash("User name already exists")
+            return redirect(url_for("route_registration"))
+        except AssertionError:
+            flash("Passwords don't match")
+            return redirect(url_for("route_registration"))
+
+        session["user_name"] = request.form["user_name"]
         return redirect(url_for("route_index"))
 
 
@@ -309,7 +320,17 @@ def route_registration():
 
 @app.route("/login", methods=["POST"])
 def route_login():
-    # session["user_name"] = "user"
+    if data_manager.login(request.form):
+        session["user_name"] = request.form["user_name"]
+        return redirect(url_for("route_index"))
+    else:
+        flash("You have entered an invalid user name or password. Please enter the correct details and try again.")
+        return redirect(url_for("route_index"))
+
+
+@app.route("/logout")
+def route_logout():
+    session.pop("user_name")
     return redirect(url_for("route_index"))
 
 

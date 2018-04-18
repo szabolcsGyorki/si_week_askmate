@@ -1,6 +1,7 @@
 import connection
 from datetime import datetime
 import os
+import password_crypting
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
@@ -133,6 +134,25 @@ def add_tag_to_question(question_id, tag_id):
     connection.simple_insert("question_tag", columns, values)
 
 
+def add_new_user(user):
+    name = user["user_name"]
+    if user_name_exists(name):
+        raise ValueError
+
+    password = user["password"]
+    confirm_password = user["confirm_password"]
+
+    if not passwords_match(password, confirm_password):
+        raise AssertionError
+
+    password = password_crypting.hash_password(password)
+    date = datetime.now().replace(microsecond=000000)
+    columns = ["user_name", "password", "registration_date"]
+    values = [name, password, date]
+
+    connection.simple_insert("users", columns, values)
+
+
 ####################################################################################
 # Edit block
 ####################################################################################
@@ -255,6 +275,31 @@ def get_tag_id(attribute):
     query_result = connection.get_tag_id(attribute)
     tag_id = query_result[0]["id"]
     return tag_id
+
+
+####################################################################################
+# Login/registration functions
+####################################################################################
+
+
+def user_name_exists(name):
+    user_names = connection.get_user_name(name)
+    return bool(user_names)
+
+
+def passwords_match(password, confirm_password):
+    return password == confirm_password
+
+
+def login(user):
+    name = user["user_name"]
+    typed_password = user["password"]
+    user_password = connection.get_user_password(name)[0]["password"]
+
+    return user_name_exists(name) and password_crypting.verify_password(typed_password, user_password)
+
+
+
 
 
 ####################################################################################
