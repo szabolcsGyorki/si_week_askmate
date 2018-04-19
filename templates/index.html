@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="w3-responsive"><table class="w3-table w3-striped w3-bordered w3-hoverable">
+    <div class="w3-responsive"><table class="w3-table w3-bordered w3-hoverable">
         <tr class="w3-padding-small">
             <th><a href="{{ url_for(page_url, order_by='title', order_direction=order_direction) }}">Title</a></th>
             <th><a href="{{ url_for(page_url, order_by='submission_time', order_direction=order_direction) }}">Submission time</a></th>

@@ -24,7 +24,7 @@ def get_questions_list(cursor, limit=None):
 def get_answer_comments(cursor):
     cursor.execute(
         """
-        SELECT id, answer_id, message, submission_time, edited_count 
+        SELECT id, answer_id, message, submission_time, edited_count, user_id
         FROM comment
         WHERE question_id IS NULL 
         """
@@ -142,6 +142,13 @@ def get_user_password(cursor, name):
     return password
 
 
+@database_common.connection_handler
+def get_users(cursor):
+    cursor.execute("SELECT id, user_name FROM users")
+    users = cursor.fetchall()
+    return users
+
+
 ####################################################################################
 # Multifunction queries
 ####################################################################################
@@ -214,6 +221,13 @@ def get_updates(columns, values):
         update_list.append(" {} = '{}'".format(col, value))
     update_set = ",".join(update_list)
     return update_set
+
+
+@database_common.connection_handler
+def get_user_id(cursor, user_name):
+    cursor.execute("SELECT id FROM users WHERE user_name=%(user_name)s;", {"user_name": user_name})
+    id = cursor.fetchall()
+    return id
 
 
 ####################################################################################

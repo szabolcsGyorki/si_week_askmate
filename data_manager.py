@@ -73,10 +73,10 @@ def get_tags_with_question_ids():
 ####################################################################################
 
 
-def add_question(title, message, image=None):
+def add_question(title, message, user_id, image=None):
     dt = datetime.now().replace(microsecond=000000)
-    columns = ["submission_time", "view_number", "vote_number", "title", "message"]
-    values = [str(dt), 0, 0, title, message]
+    columns = ["submission_time", "view_number", "vote_number", "title", "message", "user_id"]
+    values = [str(dt), 0, 0, title, message, user_id]
 
     if image:
         columns.append("image")
@@ -84,10 +84,10 @@ def add_question(title, message, image=None):
     connection.simple_insert("question", columns, values)
 
 
-def add_new_answer(message, question_id, image=None):
+def add_new_answer(message, question_id, user_id, image=None):
     dt = datetime.now().replace(microsecond=000000)
-    columns = ["submission_time", "vote_number", "question_id", "message"]
-    values = [str(dt), 0, question_id, message]
+    columns = ["submission_time", "vote_number", "question_id", "message", "user_id"]
+    values = [str(dt), 0, question_id, message, user_id]
 
     if image:
         columns.append("image")
@@ -95,10 +95,10 @@ def add_new_answer(message, question_id, image=None):
     connection.simple_insert("answer", columns, values)
 
 
-def add_comment(column, column_id, message):
+def add_comment(column, column_id, message, user_id):
     dt = datetime.now().replace(microsecond=000000)
-    columns = [column, "message", "submission_time", "edited_count"]
-    values = [column_id, message, dt, 0]
+    columns = [column, "message", "submission_time", "edited_count", "user_id"]
+    values = [column_id, message, dt, 0, user_id]
     connection.simple_insert("comment", columns, values)
 
 
@@ -248,6 +248,15 @@ def get_answer_ids_with_comment(key, list_of_dict):
     return ids
 
 
+def get_user_id(user_name):
+    user_id = connection.get_user_id(user_name)[0]["id"]
+    return user_id
+
+
+def get_users():
+    return connection.get_users()
+
+
 ####################################################################################
 # Login/registration functions
 ####################################################################################
@@ -265,8 +274,10 @@ def passwords_match(password, confirm_password):
 def login(user):
     name = user["user_name"]
     typed_password = user["password"]
-    user_password = connection.get_user_password(name)[0]["password"]
-    return user_name_exists(name) and password_crypting.verify_password(typed_password, user_password)
+    if user_name_exists(name):
+        user_password = connection.get_user_password(name)[0]["password"]
+        return password_crypting.verify_password(typed_password, user_password)
+    return False
 
 
 ####################################################################################

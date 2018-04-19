@@ -72,13 +72,15 @@ def display_a_question(question_id):
     answer_comments = data_manager.get_answer_comments()
     tags = data_manager.get_question_tags(question_id)
     answers_with_comments = data_manager.get_answer_ids_with_comment("answer_id", answer_comments)
+    users = data_manager.get_users()
     return render_template("display.html",
                            question=question,
                            answers=answers,
                            question_comments=question_comments,
                            answer_comments=answer_comments,
                            tags=tags,
-                           answers_with_comments=answers_with_comments)
+                           answers_with_comments=answers_with_comments,
+                           users=users)
 
 
 @app.route("/add-question", methods=["GET", "POST"])
@@ -88,7 +90,7 @@ def route_add_question():
         file_url = data_manager.file_upload(request.files)
         title = request.form["title"]
         message = request.form["message"]
-        data_manager.add_question(title, message, file_url)
+        data_manager.add_question(title, message, session["user_id"], file_url)
         return redirect(url_for("route_index"))
 
     return render_template("form.html",
@@ -103,7 +105,7 @@ def route_new_answer(question_id):
     if request.method == "POST":
         file_url = data_manager.file_upload(request.files)
         message = request.form["message"]
-        data_manager.add_new_answer(message, question_id, file_url)
+        data_manager.add_new_answer(message, question_id, session["user_id"], file_url)
         return redirect(url_for("display_a_question", question_id=question_id))
 
     return render_template("form.html",
@@ -117,7 +119,7 @@ def route_new_question_comment(question_id):
 
     if request.method == "POST":
         message = request.form["message"]
-        data_manager.add_comment("question_id", question_id, message)
+        data_manager.add_comment("question_id", question_id, message, session["user_id"])
         return redirect(url_for("display_a_question", question_id=question_id))
 
     return render_template("form.html",
@@ -131,7 +133,7 @@ def route_new_answer_comment(answer_id):
     if request.method == "POST":
         question_id = data_manager.get_question_id("answer", answer_id)
         message = request.form["message"]
-        data_manager.add_comment("answer_id", answer_id, message)
+        data_manager.add_comment("answer_id", answer_id, message, session["user_id"])
         return redirect(url_for("display_a_question", question_id=question_id))
 
     return render_template("form.html",
@@ -281,6 +283,7 @@ def route_registration():
             return redirect(url_for("route_registration"))
 
         session["user_name"] = request.form["user_name"]
+        session["user_id"] = data_manager.get_user_id(session["user_name"])
         return redirect(url_for("route_index"))
 
     return render_template("form.html",
@@ -291,6 +294,7 @@ def route_registration():
 def route_login():
     if data_manager.login(request.form):
         session["user_name"] = request.form["user_name"]
+        session["user_id"] = data_manager.get_user_id(session["user_name"])
         return redirect(url_for("route_index"))
     else:
         flash("You have entered an invalid user name or password. Please enter the correct details and try again.")

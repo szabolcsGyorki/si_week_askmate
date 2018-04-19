@@ -13,7 +13,8 @@
     <div class="w3-margin-top">
         Submission time: {{ question.submission_time }}
         Views: {{ question.view_number }}
-        Rating: {{ question.vote_number }}
+        Rating: {{ question.vote_number }}<br>{{ question.user_id }}
+        Submitted by: {% for user in users %}{% if user.id == question.user_id %}{{ user.user_name }}{% endif %}{% endfor %}
     </div>
     <a href="{{ url_for('route_question_vote_up', question_id=question.id) }}" class="w3-button w3-amber w3-small w3-padding-small">Rate up</a>
     <a href="{{ url_for('route_question_vote_down', question_id=question.id) }}" class="w3-button w3-deep-orange w3-small w3-padding-small">Rate down</a><br>
@@ -26,18 +27,23 @@
             </a>
         {% endif %}
     </p>
-    <a href="{{ url_for('route_edit_question', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Edit Question</a>
     <a href="{{ url_for('route_new_question_comment', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Comment question</a>
     <a href="{{ url_for('route_new_answer', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Answer the question</a>
-    <a href="{{ url_for('route_delete_question', question_id=question.id) }}" class="w3-button w3-red w3-small w3-padding-small">Delete Question</a>
+    {% if session.user_id == question.user_id %}
+        <a href="{{ url_for('route_edit_question', question_id=question.id) }}" class="w3-button w3-green w3-small w3-padding-small">Edit Question</a>
+        <a href="{{ url_for('route_delete_question', question_id=question.id) }}" class="w3-button w3-red w3-small w3-padding-small">Delete Question</a>
+    {% endif %}
 
     <p>
         <div class="w3-row w3-card w3-padding-small comment-wrapper">
             {% for comment in question_comments %}
                 <span class="message">{{ comment.message }}</span>
-                <br>on {{ comment.submission_time }} Edited: {{ comment.edited_count }}
-                <a href="{{ url_for('route_edit_comment', question_id=question.id, comment_id=comment.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Edit</a>
-                <a onclick="document.getElementById({{ comment.id }}).style.display='block'" class="w3-button w3-red w3-tiny w3-padding-small">Delete</a>
+                <br>by {% for user in users %}{% if user.id == comment.user_id %}{{ user.user_name }}{% endif %}{% endfor %}
+                on {{ comment.submission_time }} Edited: {{ comment.edited_count }}
+                {% if session.user_id == comment.user_id %}
+                    <a href="{{ url_for('route_edit_comment', question_id=question.id, comment_id=comment.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Edit</a>
+                    <a onclick="document.getElementById({{ comment.id }}).style.display='block'" class="w3-button w3-red w3-tiny w3-padding-small">Delete</a>
+                {% endif %}
                 <div id="{{ comment.id }}" class="w3-modal">
                     <div class="w3-modal-content modal-wrapper">
 
@@ -69,6 +75,7 @@
                 <p>
                     Submission time: {{ answer.submission_time }}
                     Rating: {{ answer.vote_number }}<br>
+                    Answer by: {% for user in users %}{% if user.id == answer.user_id %}{{ user.user_name }}{% endif %}{% endfor %}
                     <a href="{{ url_for('route_answer_vote_up', answer_id=answer.id) }}"  class="w3-button w3-amber w3-small w3-padding-small">Rate up</a>
                     <a href="{{ url_for('route_answer_vote_down', answer_id=answer.id) }}"  class="w3-button w3-deep-orange w3-small w3-padding-small">Rate down</a><br>
                     <p class="message"><h4>{{ answer.message }}</h4></p>
@@ -80,8 +87,10 @@
                         {% endif %}
                     </div></p>
                     <a href="{{ url_for('route_new_answer_comment', answer_id=answer.id) }}" class="w3-button w3-green w3-small w3-padding-small">Comment answer</a>
-                    <a href="{{ url_for('route_edit_answer', answer_id=answer.id) }}" class="w3-button w3-green w3-small w3-padding-small">Edit answer</a>
-                    <a href="{{ url_for('route_delete_answer', answer_id=answer.id) }}" class="w3-button w3-red w3-small w3-padding-small">Delete answer</a>
+                    {% if session.user_id == answer.user_id %}
+                        <a href="{{ url_for('route_edit_answer', answer_id=answer.id) }}" class="w3-button w3-green w3-small w3-padding-small">Edit answer</a>
+                        <a href="{{ url_for('route_delete_answer', answer_id=answer.id) }}" class="w3-button w3-red w3-small w3-padding-small">Delete answer</a>
+                    {% endif %}
                     <div class="w3-row w3-card w3-padding-small w3-margin-top w3-margin-bottom comment-wrapper">
                         {% if answer.id not in answers_with_comments %}
                             There are no comments.
@@ -89,9 +98,12 @@
                             {% for comment in answer_comments %}
                                 {% if comment.answer_id == answer.id %}
                                     <span class="message">{{ comment.message }}</span>
-                                    <br>on {{ comment.submission_time }} Edited: {{ comment.edited_count }}
-                                        <a href="{{ url_for('route_edit_comment', comment_id=comment.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Edit</a>
-                                        <a onclick="document.getElementById({{ comment.id }}).style.display='block'" class="w3-button w3-red w3-tiny w3-padding-small">Delete</a>
+                                    <br>by {% for user in users %}{% if user.id == comment.user_id %}{{ user.user_name }}{% endif %}{% endfor %}
+                                    on {{ comment.submission_time }} Edited: {{ comment.edited_count }}
+                                        {% if session.user_id == comment.user_id %}
+                                            <a href="{{ url_for('route_edit_comment', comment_id=comment.id) }}" class="w3-button w3-green w3-tiny w3-padding-small">Edit</a>
+                                            <a onclick="document.getElementById({{ comment.id }}).style.display='block'" class="w3-button w3-red w3-tiny w3-padding-small">Delete</a>
+                                        {% endif %}
                                         <div id="{{ comment.id }}" class="w3-modal">
                                             <div class="w3-modal-content modal-wrapper">
 
