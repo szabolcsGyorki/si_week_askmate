@@ -2,6 +2,7 @@ import connection
 from datetime import datetime
 import os
 import password_crypting
+from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
@@ -73,50 +74,31 @@ def get_tags_with_question_ids():
 
 
 def add_question(title, message, image=None):
-    columns = ["submission_time", "view_number", "vote_number", "title", "message"]
-    values = []
-
     dt = datetime.now().replace(microsecond=000000)
-    values.append(str(dt))
-    values.append(0)
-    values.append(0)
-    values.append(title)
-    values.append(message)
+    columns = ["submission_time", "view_number", "vote_number", "title", "message"]
+    values = [str(dt), 0, 0, title, message]
 
     if image:
         columns.append("image")
         values.append(image)
-
     connection.simple_insert("question", columns, values)
 
 
 def add_new_answer(message, question_id, image=None):
-    columns = ["submission_time", "vote_number", "question_id", "message"]
-    values = []
-
     dt = datetime.now().replace(microsecond=000000)
-    values.append(str(dt))
-    values.append(0)
-    values.append(question_id)
-    values.append(message)
+    columns = ["submission_time", "vote_number", "question_id", "message"]
+    values = [str(dt), 0, question_id, message]
 
     if image:
         columns.append("image")
         values.append(image)
-
     connection.simple_insert("answer", columns, values)
 
 
 def add_comment(column, column_id, message):
-    columns = [column, "message", "submission_time", "edited_count"]
-    values = []
-
     dt = datetime.now().replace(microsecond=000000)
-    values.append(column_id)
-    values.append(message)
-    values.append(dt)
-    values.append(0)
-
+    columns = [column, "message", "submission_time", "edited_count"]
+    values = [column_id, message, dt, 0]
     connection.simple_insert("comment", columns, values)
 
 
@@ -128,9 +110,7 @@ def add_new_tag(name):
 
 def add_tag_to_question(question_id, tag_id):
     columns = ["question_id", "tag_id"]
-    values = []
-    values.append(question_id)
-    values.append(tag_id)
+    values = [question_id, tag_id]
     connection.simple_insert("question_tag", columns, values)
 
 
@@ -141,7 +121,6 @@ def add_new_user(user):
 
     password = user["password"]
     confirm_password = user["confirm_password"]
-
     if not passwords_match(password, confirm_password):
         raise AssertionError
 
@@ -149,7 +128,6 @@ def add_new_user(user):
     date = datetime.now().replace(microsecond=000000)
     columns = ["user_name", "password", "registration_date"]
     values = [name, password, date]
-
     connection.simple_insert("users", columns, values)
 
 
@@ -160,42 +138,31 @@ def add_new_user(user):
 
 def edit_question(title, message, question_id, image=None):
     columns = ["title", "message"]
-    values = []
-
-    values.append(title)
-    values.append(message)
+    values = [title, message]
 
     if image:
         delete_image("question", "id", question_id)
         columns.append("image")
         values.append(image)
-
     connection.update_table("question", columns, values, question_id)
 
 
 def edit_answer(message, answer_id, image=None):
     columns = ["message"]
-    values = []
-
-    values.append(message)
+    values = [message]
 
     if image:
         delete_image("answer", "id", answer_id)
         columns.append("image")
         values.append(image)
-
     connection.update_table("answer", columns, values, answer_id)
 
 
 def edit_comment(message, comment_id):
     comment = connection.simple_select("comment", "id", comment_id)[0]
     columns = ["message", "edited_count"]
-    values = []
     edited = str(comment["edited_count"] + 1)
-
-    values.append(message)
-    values.append(edited)
-
+    values = [message, edited]
     connection.update_table("comment", columns, values, comment_id)
 
 
@@ -207,7 +174,6 @@ def vote(table, direction, entry_id):
         value = [str(record["vote_number"]+1)]
     else:
         value = [str(record["vote_number"]-1)]
-
     connection.update_table(table, column, value, entry_id)
 
 
@@ -277,6 +243,11 @@ def get_tag_id(attribute):
     return tag_id
 
 
+def get_answer_ids_with_comment(key, list_of_dict):
+    ids = [elem[key] for elem in list_of_dict]
+    return ids
+
+
 ####################################################################################
 # Login/registration functions
 ####################################################################################
@@ -295,11 +266,7 @@ def login(user):
     name = user["user_name"]
     typed_password = user["password"]
     user_password = connection.get_user_password(name)[0]["password"]
-
     return user_name_exists(name) and password_crypting.verify_password(typed_password, user_password)
-
-
-
 
 
 ####################################################################################
@@ -309,10 +276,8 @@ def login(user):
 
 def view_count_increase(question_id):
     question = connection.simple_select("question", "id", question_id)[0]
-
     columns = ["view_number"]
     values = [str(question["view_number"] + 1)]
-
     connection.update_table("question", columns, values, question_id)
 
 
@@ -325,11 +290,6 @@ def order_list_of_dicts(list_of_dicts, orderby, order_direction):
     else:
         sorted_questions = sorted(list_of_dicts, key=lambda key: key[orderby], reverse=reverse)
     return sorted_questions
-
-
-def get_answer_ids_with_comment(key, list_of_dict):
-    ids = [elem[key] for elem in list_of_dict]
-    return ids
 
 
 def delete_image(table, column, record_id):
@@ -353,3 +313,13 @@ def allowed_file(filename):
     return "." in filename and \
            filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+def file_upload(file_to_upload):
+    upload_folder = "./static/images/"
+
+    if file_to_upload:
+        file = file_to_upload['image']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(os.path.dirname(__file__), upload_folder, filename))
+            return os.path.join('images/', filename)

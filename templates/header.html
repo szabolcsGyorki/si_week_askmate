@@ -19,7 +19,7 @@
         <a href="{{ url_for('route_index') }}" class="w3-bar-item w3-button w3-mobile">Home</a>
         <a href="{{ url_for('route_all_questions') }}" class="w3-bar-item w3-button w3-mobile">All Questions</a>
         <a href="{{ url_for('route_add_question') }}" class="w3-bar-item w3-button w3-mobile">Ask Question</a>
-        <form action="{{ url_for('route_index') }}">
+        <form action="{{ url_for('route_search') }}">
             <button type="submit" class="w3-bar-item w3-button w3-green w3-right">Go</button>
             <input type="text" name="search" class="w3-bar-item w3-input w3-right" placeholder="Search..">
         </form>

@@ -11,23 +11,12 @@ app.config["MAX_CONTENT_LENGTH"] = 16 * 4000 * 4000
 app.secret_key = os.environ.get("SECRET_KEY")
 
 
-@app.route("/", methods=["POST", "GET"])
+@app.route("/")
 def route_index():
     questions = data_manager.get_latest_five_questions()
     tags = data_manager.get_tags_with_question_ids()
     order_by = request.args.get("order_by")
     order_direction = "desc" if request.args.get("order_direction") == "asc" else "asc"
-
-    if request.args.get("search"):
-        search_terms = request.args.get("search")
-        question_titles = data_manager.search(search_terms, "question_titles")
-        question_messages = data_manager.search(search_terms, "question_messages")
-        answers = data_manager.search(search_terms, "answers")
-        return render_template("search_results.html",
-                               question_titles=question_titles,
-                               question_messages=question_messages,
-                               answers=answers,
-                               search_terms=search_terms)
 
     if order_by:
         questions = data_manager.order_list_of_dicts(questions, order_by, order_direction)
@@ -39,7 +28,7 @@ def route_index():
                            tags=tags)
 
 
-@app.route("/list", methods=["POST", "GET"])
+@app.route("/list")
 def route_all_questions():
     questions = data_manager.get_all_questions()
     tags = data_manager.get_tags_with_question_ids()
@@ -54,6 +43,20 @@ def route_all_questions():
                            page_url="route_all_questions",
                            order_direction=order_direction,
                            tags=tags)
+
+
+@app.route("/search")
+def route_search():
+    if request.args.get("search"):
+        search_terms = request.args.get("search")
+        question_titles = data_manager.search(search_terms, "question_titles")
+        question_messages = data_manager.search(search_terms, "question_messages")
+        answers = data_manager.search(search_terms, "answers")
+        return render_template("search_results.html",
+                               question_titles=question_titles,
+                               question_messages=question_messages,
+                               answers=answers,
+                               search_terms=search_terms)
 
 
 @app.route("/question/<question_id>/views")
@@ -85,13 +88,13 @@ def route_add_question():
 
     if request.method == "POST":
 
-        file_url = None
-        if request.files:
-            file = request.files['image']
-            if file and data_manager.allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(os.path.dirname(__file__), UPLOAD_FOLDER, filename))
-                file_url = os.path.join('images/', filename)
+        file_url = data_manager.file_upload(request.files)
+        # if request.files:
+        #     file = request.files['image']
+        #     if file and data_manager.allowed_file(file.filename):
+        #         filename = secure_filename(file.filename)
+        #         file.save(os.path.join(os.path.dirname(__file__), UPLOAD_FOLDER, filename))
+        #         file_url = os.path.join('images/', filename)
 
         title = request.form["title"]
         message = request.form["message"]
@@ -313,7 +316,6 @@ def route_registration():
         session["user_name"] = request.form["user_name"]
         return redirect(url_for("route_index"))
 
-
     return render_template("form.html",
                            registration=True)
 
@@ -339,4 +341,3 @@ if __name__ == "__main__":
         host='0.0.0.0',
         debug=True,
     )
-
