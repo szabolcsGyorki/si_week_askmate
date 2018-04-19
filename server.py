@@ -20,7 +20,6 @@ def route_index():
 
     if order_by:
         questions = data_manager.order_list_of_dicts(questions, order_by, order_direction)
-
     return render_template("index.html",
                            questions=questions,
                            page_url="route_index",
@@ -37,7 +36,6 @@ def route_all_questions():
 
     if order_by:
         questions = data_manager.order_list_of_dicts(questions, order_by, order_direction)
-
     return render_template("index.html",
                            questions=questions,
                            page_url="route_all_questions",
@@ -87,15 +85,7 @@ def display_a_question(question_id):
 def route_add_question():
 
     if request.method == "POST":
-
         file_url = data_manager.file_upload(request.files)
-        # if request.files:
-        #     file = request.files['image']
-        #     if file and data_manager.allowed_file(file.filename):
-        #         filename = secure_filename(file.filename)
-        #         file.save(os.path.join(os.path.dirname(__file__), UPLOAD_FOLDER, filename))
-        #         file_url = os.path.join('images/', filename)
-
         title = request.form["title"]
         message = request.form["message"]
         data_manager.add_question(title, message, file_url)
@@ -111,15 +101,7 @@ def route_add_question():
 def route_new_answer(question_id):
 
     if request.method == "POST":
-
-        file_url = None
-        if request.files:
-            file = request.files['image']
-            if file and data_manager.allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(os.path.dirname(__file__), UPLOAD_FOLDER, filename))
-                file_url = os.path.join('images/', filename)
-
+        file_url = data_manager.file_upload(request.files)
         message = request.form["message"]
         data_manager.add_new_answer(message, question_id, file_url)
         return redirect(url_for("display_a_question", question_id=question_id))
@@ -161,14 +143,7 @@ def route_new_answer_comment(answer_id):
 def route_edit_question(question_id):
 
     if request.method == "POST":
-        file_url = None
-        if request.files:
-            file = request.files['image']
-            if file and data_manager.allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(os.path.dirname(__file__), UPLOAD_FOLDER, filename))
-                file_url = os.path.join('images/', filename)
-
+        file_url = data_manager.file_upload(request.files)
         title = request.form["title"]
         message = request.form["message"]
         data_manager.edit_question(title, message, question_id, file_url)
@@ -189,15 +164,7 @@ def route_edit_question(question_id):
 def route_edit_answer(answer_id):
 
     if request.method == "POST":
-
-        file_url = None
-        if request.files:
-            file = request.files['image']
-            if file and data_manager.allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(os.path.dirname(__file__), UPLOAD_FOLDER, filename))
-                file_url = os.path.join('images/', filename)
-
+        file_url = data_manager.file_upload(request.files)
         question_id = data_manager.get_question_id("answer", answer_id)
         message = request.form["message"]
         data_manager.edit_answer(message, answer_id, file_url)
