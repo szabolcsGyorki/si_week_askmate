@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, session, redirect, url_for, flash
+from flask import Flask, render_template, request, session, redirect, url_for, flash, g
+from functools import wraps
 import data_manager
-from werkzeug.utils import secure_filename
 import os
 
 UPLOAD_FOLDER = "./static/images/"
@@ -9,6 +9,16 @@ app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 16 * 4000 * 4000
 app.secret_key = os.environ.get("SECRET_KEY")
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not "user_name" in session:
+            flash("You need to be logged in to user that feature!")
+            return redirect(url_for('route_index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route("/")
@@ -84,6 +94,7 @@ def display_a_question(question_id):
 
 
 @app.route("/add-question", methods=["GET", "POST"])
+@login_required
 def route_add_question():
 
     if request.method == "POST":
@@ -100,6 +111,7 @@ def route_add_question():
 
 
 @app.route("/question/<question_id>/new-answer", methods=["GET", "POST"])
+@login_required
 def route_new_answer(question_id):
 
     if request.method == "POST":
@@ -115,6 +127,7 @@ def route_new_answer(question_id):
 
 
 @app.route("/question/<question_id>/new-comment", methods=["GET", "POST"])
+@login_required
 def route_new_question_comment(question_id):
 
     if request.method == "POST":
@@ -128,6 +141,7 @@ def route_new_question_comment(question_id):
 
 
 @app.route("/answer/<answer_id>/new-comment", methods=["GET", "POST"])
+@login_required
 def route_new_answer_comment(answer_id):
 
     if request.method == "POST":
@@ -142,6 +156,7 @@ def route_new_answer_comment(answer_id):
 
 
 @app.route("/question/<question_id>/edit", methods=["GET", "POST"])
+@login_required
 def route_edit_question(question_id):
 
     if request.method == "POST":
@@ -163,6 +178,7 @@ def route_edit_question(question_id):
 
 
 @app.route("/answer/<answer_id>/edit", methods=["GET", "POST"])
+@login_required
 def route_edit_answer(answer_id):
 
     if request.method == "POST":
@@ -182,6 +198,7 @@ def route_edit_answer(answer_id):
 
 
 @app.route("/comments/<comment_id>/edit", methods=["GET", "POST"])
+@login_required
 def route_edit_comment(comment_id):
 
     if request.method == "POST":
@@ -199,12 +216,14 @@ def route_edit_comment(comment_id):
 
 
 @app.route("/question/<question_id>/delete")
+@login_required
 def route_delete_question(question_id):
     data_manager.delete_question(question_id)
     return redirect(url_for("route_index"))
 
 
 @app.route("/answer/<answer_id>/delete")
+@login_required
 def route_delete_answer(answer_id):
     question_id = data_manager.get_question_id("answer", answer_id)
     data_manager.delete_answer(answer_id)
@@ -212,24 +231,28 @@ def route_delete_answer(answer_id):
 
 
 @app.route("/question/<question_id>/comments/<comment_id>/delete")
+@login_required
 def route_delete_comment(question_id, comment_id):
     data_manager.delete_comment(comment_id)
     return redirect(url_for("display_a_question", question_id=question_id))
 
 
 @app.route("/question/<question_id>/vote-up")
+@login_required
 def route_question_vote_up(question_id):
     data_manager.vote("question", "up", question_id)
     return redirect(url_for("display_a_question", question_id=question_id))
 
 
 @app.route("/question/<question_id>/vote-down")
+@login_required
 def route_question_vote_down(question_id):
     data_manager.vote("question", "down", question_id)
     return redirect(url_for("display_a_question", question_id=question_id))
 
 
 @app.route("/answer/<answer_id>/vote-up")
+@login_required
 def route_answer_vote_up(answer_id):
     question_id = data_manager.get_question_id("answer", answer_id)
     data_manager.vote("answer", "up", answer_id)
@@ -237,6 +260,7 @@ def route_answer_vote_up(answer_id):
 
 
 @app.route("/answer/<answer_id>/vote-down")
+@login_required
 def route_answer_vote_down(answer_id):
     question_id = data_manager.get_question_id("answer", answer_id)
     data_manager.vote("answer", "up", answer_id)
@@ -244,6 +268,7 @@ def route_answer_vote_down(answer_id):
 
 
 @app.route("/question/<question_id>/new-tag", methods=["GET", "POST"])
+@login_required
 def tag_question(question_id):
     tags = data_manager.get_all_tags()
 
@@ -265,6 +290,7 @@ def tag_question(question_id):
 
 
 @app.route("/question/<question_id>/tag/<tag_id>/delete")
+@login_required
 def delete_tag(question_id, tag_id):
     data_manager.delete_question_tag(tag_id)
     return redirect(url_for("display_a_question", question_id=question_id))
@@ -304,7 +330,13 @@ def route_login():
 @app.route("/logout")
 def route_logout():
     session.pop("user_name")
+    session.pop("user_id")
     return redirect(url_for("route_index"))
+
+
+@app.errorhandler(404)
+def error_page_not_found(e):
+    return render_template("404.html"), 404
 
 
 if __name__ == "__main__":
